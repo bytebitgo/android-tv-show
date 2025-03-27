@@ -1,5 +1,6 @@
 package com.cmcc.myapplication
 
+import android.app.Activity
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -10,6 +11,7 @@ class WebViewActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_webview)
 
         webView = findViewById(R.id.webview)
@@ -22,6 +24,7 @@ class WebViewActivity : FragmentActivity() {
 
         webView.webViewClient = WebViewClient()
         webView.loadUrl("https://mt5.gslb.vip/mt/")
+
     }
 
     override fun onBackPressed() {
