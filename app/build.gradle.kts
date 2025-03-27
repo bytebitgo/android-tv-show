@@ -8,12 +8,10 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cmcc.myapplication"
         minSdk = 26
         targetSdk = 34
         versionCode = 2
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -26,12 +24,46 @@ android {
             )
         }
     }
+
+    flavorDimensions += "market"
+    productFlavors {
+        create("gold") {
+            dimension = "market"
+            applicationId = "com.cmcc.xauusd"
+            resValue("string", "app_name", "黄金行情")
+            buildConfigField("String", "WEB_URL", "\"https://mt5.gslb.vip/mt/xauusd.html\"")
+        }
+        create("nasdaq") {
+            dimension = "market"
+            applicationId = "com.cmcc.index"
+            resValue("string", "app_name", "纳斯达克指数")
+            buildConfigField("String", "WEB_URL", "\"https://mt5.gslb.vip/mt/index.html\"")
+        }
+        create("oil") {
+            dimension = "market"
+            applicationId = "com.cmcc.usoil"
+            resValue("string", "app_name", "原油")
+            buildConfigField("String", "WEB_URL", "\"https://mt5.gslb.vip/mt/usoil.html\"")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    buildFeatures {
+        buildConfig = true
+    }
+
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            outputFileName = "${variant.name}.apk"
+        }
     }
 }
 

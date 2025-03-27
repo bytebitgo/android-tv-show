@@ -23,7 +23,7 @@ class WebViewActivity : FragmentActivity() {
         }
 
         webView.webViewClient = WebViewClient()
-        webView.loadUrl("https://mt5.gslb.vip/mt/")
+        webView.loadUrl(BuildConfig.WEB_URL)
 
     }
 
