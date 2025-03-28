@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+  CI: true
 
 jobs:
   build:
@@ -26,14 +26,29 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Generate Keystore
+        run: |
+          keytool -genkey -v \
+            -keystore android_release.keystore \
+            -alias android-app-key \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android TV,OU=Android TV,O=Android,L=Beijing,S=Beijing,C=CN" \
+            -storepass android \
+            -keypass android
+          echo "SIGNING_KEY=$(base64 -w 0 android_release.keystore)" >> $GITHUB_ENV
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build all variants
+      - name: Build Debug APKs
         run: |
-          ./gradlew assembleGoldDebug assembleGoldRelease \
-                   assembleNasdaqDebug assembleNasdaqRelease \
-                   assembleOilDebug assembleOilRelease
+          ./gradlew assembleGoldDebug assembleNasdaqDebug assembleOilDebug
+
+      - name: Build Unsigned Release APKs
+        run: |
+          ./gradlew assembleGoldRelease assembleNasdaqRelease assembleOilRelease
 
       - name: Sign Gold APK
         id: sign_gold
@@ -65,6 +80,13 @@ jobs:
           keyStorePassword: android
           keyPassword: android
 
+      - name: Save Keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-keystore
+          path: android_release.keystore
+          retention-days: 90
+
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
@@ -84,6 +106,7 @@ jobs:
             ${{steps.sign_nasdaq.outputs.signedReleaseFile}}
             app/build/outputs/apk/oil/debug/oil-debug.apk
             ${{steps.sign_oil.outputs.signedReleaseFile}}
+            android_release.keystore
           body: |
             Android TV 行情显示 App ${{ env.VERSION }}
             
@@ -97,6 +120,11 @@ jobs:
             - 📱 原油行情
               - [Debug APK](oil-debug.apk)
               - [Release APK](oil-release-signed.apk)
+            
+            ### 签名信息
+            - 密钥库密码：android
+            - 密钥别名：android-app-key
+            - 密钥密码：android
             
             ### 更新说明
             请查看 CHANGELOG.md 获取详细更新信息 

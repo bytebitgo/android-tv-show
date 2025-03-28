@@ -17,17 +17,25 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../android_release.keystore")
-            storePassword = System.getenv("KEY_STORE_PASSWORD") ?: "android"
-            keyAlias = "android-app-key"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+            if (System.getenv("CI") == "true") {
+                enableV1Signing = false
+                enableV2Signing = false
+                enableV3Signing = false
+            } else {
+                storeFile = file("../android_release.keystore")
+                storePassword = System.getenv("KEY_STORE_PASSWORD") ?: "android"
+                keyAlias = "android-app-key"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (System.getenv("CI") != "true") {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
