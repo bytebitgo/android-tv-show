@@ -26,17 +26,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          sdk-platform: '34'
-
       - name: Install build tools
         run: |
-          sdkmanager --install "build-tools;34.0.0"
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;29.0.3"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "PATH=$PATH:$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_ENV
 
       - name: Generate Keystore
         run: |
@@ -71,7 +65,6 @@ jobs:
           alias: android-app-key
           keyStorePassword: android
           keyPassword: android
-          buildToolsVersion: '34.0.0'
 
       - name: Sign Nasdaq APK
         id: sign_nasdaq
@@ -82,7 +75,6 @@ jobs:
           alias: android-app-key
           keyStorePassword: android
           keyPassword: android
-          buildToolsVersion: '34.0.0'
 
       - name: Sign Oil APK
         id: sign_oil
@@ -93,7 +85,6 @@ jobs:
           alias: android-app-key
           keyStorePassword: android
           keyPassword: android
-          buildToolsVersion: '34.0.0'
 
       - name: Save Keystore
         uses: actions/upload-artifact@v4
