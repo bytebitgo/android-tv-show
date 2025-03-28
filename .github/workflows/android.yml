@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,46 +29,46 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Generate Release Key Store
+      - name: Build all variants
         run: |
-          keytool -genkey -v \
-            -keystore android_release.keystore \
-            -alias android-app-key \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=AndroidTV,OU=AndroidTV,O=Android,L=Mountain View,S=California,C=US" \
-            -storepass ${{ secrets.KEY_STORE_PASSWORD || 'android' }} \
-            -keypass ${{ secrets.KEY_PASSWORD || 'android' }}
-          echo "SIGNING_KEY=$(base64 -w 0 android_release.keystore)" >> $GITHUB_ENV
+          ./gradlew assembleGoldDebug assembleGoldRelease \
+                   assembleNasdaqDebug assembleNasdaqRelease \
+                   assembleOilDebug assembleOilRelease
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
-
-      - name: Sign Release APK
+      - name: Sign Gold APK
+        id: sign_gold
         uses: r0adkll/sign-android-release@v1
-        id: sign_app
         with:
-          releaseDirectory: app/build/outputs/apk/release
+          releaseDirectory: app/build/outputs/apk/gold/release
           signingKeyBase64: ${{ env.SIGNING_KEY }}
           alias: android-app-key
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD || 'android' }}
-          keyPassword: ${{ secrets.KEY_PASSWORD || 'android' }}
+          keyStorePassword: android
+          keyPassword: android
+
+      - name: Sign Nasdaq APK
+        id: sign_nasdaq
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/nasdaq/release
+          signingKeyBase64: ${{ env.SIGNING_KEY }}
+          alias: android-app-key
+          keyStorePassword: android
+          keyPassword: android
+
+      - name: Sign Oil APK
+        id: sign_oil
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/oil/release
+          signingKeyBase64: ${{ env.SIGNING_KEY }}
+          alias: android-app-key
+          keyStorePassword: android
+          keyPassword: android
 
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Save keystore to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-keystore
-          path: android_release.keystore
-          retention-days: 90
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -75,14 +78,25 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            ${{steps.sign_app.outputs.signedReleaseFile}}
+            app/build/outputs/apk/gold/debug/gold-debug.apk
+            ${{steps.sign_gold.outputs.signedReleaseFile}}
+            app/build/outputs/apk/nasdaq/debug/nasdaq-debug.apk
+            ${{steps.sign_nasdaq.outputs.signedReleaseFile}}
+            app/build/outputs/apk/oil/debug/oil-debug.apk
+            ${{steps.sign_oil.outputs.signedReleaseFile}}
           body: |
             Android TV 行情显示 App ${{ env.VERSION }}
             
             ### 安装包
-            - 📱 [Debug APK](app-debug.apk)
-            - 📱 [Release APK](app-release-signed.apk)
+            - 📱 黄金行情
+              - [Debug APK](gold-debug.apk)
+              - [Release APK](gold-release-signed.apk)
+            - 📱 纳斯达克指数
+              - [Debug APK](nasdaq-debug.apk)
+              - [Release APK](nasdaq-release-signed.apk)
+            - 📱 原油行情
+              - [Debug APK](oil-debug.apk)
+              - [Release APK](oil-release-signed.apk)
             
             ### 更新说明
             请查看 CHANGELOG.md 获取详细更新信息 
