@@ -53,11 +53,11 @@ jobs:
 
       - name: Build Debug APKs
         run: |
-          ./gradlew assembleGoldDebug assembleNasdaqDebug assembleOilDebug
+          ./gradlew assembleGoldDebug assembleNasdaqDebug assembleOilDebug assembleUsdjpyDebug
 
       - name: Build Unsigned Release APKs
         run: |
-          ./gradlew assembleGoldRelease assembleNasdaqRelease assembleOilRelease
+          ./gradlew assembleGoldRelease assembleNasdaqRelease assembleOilRelease assembleUsdjpyRelease
 
       - name: Sign Gold APK
         id: sign_gold
@@ -89,6 +89,16 @@ jobs:
           keyStorePassword: android
           keyPassword: android
 
+      - name: Sign Usdjpy APK
+        id: sign_usdjpy
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/usdjpy/release
+          signingKeyBase64: ${{ env.SIGNING_KEY }}
+          alias: android-app-key
+          keyStorePassword: android
+          keyPassword: android
+
       - name: Save Keystore
         uses: actions/upload-artifact@v4
         with:
@@ -115,6 +125,8 @@ jobs:
             ${{steps.sign_nasdaq.outputs.signedReleaseFile}}
             app/build/outputs/apk/oil/debug/oil-debug.apk
             ${{steps.sign_oil.outputs.signedReleaseFile}}
+            app/build/outputs/apk/usdjpy/debug/usdjpy-debug.apk
+            ${{steps.sign_usdjpy.outputs.signedReleaseFile}}
             android_release.keystore
           body: |
             Android TV 行情显示 App ${{ env.VERSION }}
@@ -129,6 +141,9 @@ jobs:
             - 📱 原油行情
               - [Debug APK](oil-debug.apk)
               - [Release APK](oil-release-signed.apk)
+            - 📱 美元日元
+              - [Debug APK](usdjpy-debug.apk)
+              - [Release APK](usdjpy-release-signed.apk)
             
             ### 签名信息
             - 密钥库密码：android
