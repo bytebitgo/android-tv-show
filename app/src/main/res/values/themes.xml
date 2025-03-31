@@ -13,9 +13,8 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- TV Focus -->
-        <item name="android:windowFocusHighlightEnabled">true</item>
+        <item name="android:defaultFocusHighlightEnabled">true</item>
         <item name="android:colorControlHighlight">@color/teal_200</item>
-        <item name="android:focusHighlightEnabled">true</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>
