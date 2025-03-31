@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -62,6 +62,12 @@ android {
             applicationId = "com.cmcc.usoil"
             resValue("string", "app_name", "原油")
             buildConfigField("String", "WEB_URL", "\"https://mt5.gslb.vip/mt/usoil.html\"")
+        }
+        create("usdjpy") {
+            dimension = "market"
+            applicationId = "com.cmcc.usdjpy"
+            resValue("string", "app_name", "美日行情")
+            buildConfigField("String", "WEB_URL", "\"https://mt5.gslb.vip/mt/usdjpy.html\"")
         }
     }
 
